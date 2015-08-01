@@ -76,6 +76,13 @@ export function searchGoogleImages(query) {
   return Promise.fromNode(imagesClient.search.bind(imagesClient, query));
 }
 
+export function fetchAndSwap(url, newFacePath) {
+  return Promise.props({
+    background: request({ url, encoding: null }),
+    newFace: fs.readFileAsync(newFacePath)
+  }).then(swap);
+}
+
 export function searchAndSwap(query, newFacePath) {
   let backgroundPromise = searchGoogleImages(query).then(images => {
     if (images.length === 0) {
