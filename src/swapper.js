@@ -1,11 +1,10 @@
 import Promise from 'bluebird';
-import Canvas from 'canvas';
 import fs from 'fs';
-import { tracking } from './tracking';
 import imagesClient from 'google-images';
-import request from 'request-promise';
+import request from 'request';
+import cv from 'opencv';
+import images from 'images';
 
-const { Image } = Canvas;
 Promise.promisifyAll(fs);
 
 const MAX_SIZE = 1000;
@@ -26,42 +25,34 @@ function proportionalSize({ width, height }) { // TODO: Maybe adjusting stepSize
 
 export function load(backgroundPath, newFacePath) {
   return Promise.props({
-    background: fs.readFileAsync(backgroundPath),
-    newFace: fs.readFileAsync(newFacePath)
+    background: fs.readFileSync(backgroundPath),
+    newFace: fs.readFileSync(newFacePath)
   });
 }
 
 export function swap({ background, newFace }) {
   return new Promise((resolve, reject) => {
-    let canvas = new Canvas(200, 200);
-    let ctx = canvas.getContext('2d');
+    let backgroundStream = new cv.ImageDataStream();
 
-    let backgroundImage = new Image();
-    let newFaceImage = new Image();
+    // TODO: Use these to have a reasonable size
+    // let { width, height } = proportionalSize(backgroundImage);
 
-    backgroundImage.src = background;
-    newFaceImage.src = newFace;
-
-    let tracker = new tracking.ObjectTracker(['face']);
-    tracker.setStepSize(2.0);
-    tracker.setEdgesDensity(0.1);
-    tracker.setInitialScale(4.0);
-
-    tracker.on('track', evt => {
-      evt.data.forEach(data => {
-        ctx.drawImage(newFaceImage, data.x, data.y, data.width, data.height);
+    backgroundStream.on('load', matrix => {
+      matrix.detectObject(cv.FACE_CASCADE, {}, (err, faces) => {
+        if (err) {
+          reject(err); // TODO: Better error messages
+        } else {
+          let image = images(matrix.toBuffer());
+          faces.forEach(face => {
+            let newFaceImage = images(newFace).size(face.width, face.height);
+            image.draw(newFaceImage, face.x, face.y);
+          });
+          resolve(image.encode('png'));
+        }
       });
-
-      resolve(canvas.pngStream());
     });
 
-    let { width, height } = proportionalSize(backgroundImage);
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(backgroundImage, 0, 0, width, height);
-
-    // Calls canvas tracking directly instead of going through `document`
-    tracking.trackCanvas_(canvas, tracker); // eslint-disable-line no-underscore-dangle
+    background.pipe(backgroundStream);
   });
 }
 
@@ -70,16 +61,16 @@ export function searchGoogleImages(query) {
 }
 
 export function fetchAndSwap(url, newFacePath) {
-  return Promise.props({
+  return swap({
     background: request({ url, encoding: null }),
-    newFace: fs.readFileAsync(newFacePath)
-  }).then(swap);
+    newFace: fs.readFileSync(newFacePath)
+  });
 }
 
 export function searchAndSwap(query, newFacePath) {
   let backgroundPromise = searchGoogleImages(query).then(images => {
     if (images.length === 0) {
-      throw new Error('No images with faces found');
+      throw new Error('No images found');
     }
 
     // TODO: Handle that maybe some URLs end up not being images
@@ -88,7 +79,7 @@ export function searchAndSwap(query, newFacePath) {
 
   return Promise.props({
     background: backgroundPromise,
-    newFace: fs.readFileAsync(newFacePath)
+    newFace: fs.readFileSync(newFacePath)
   }).then(swap);
 }
 
