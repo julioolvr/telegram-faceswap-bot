@@ -13,7 +13,9 @@
   "dependencies": {
     "babel": "^5.8.5",
     "bluebird": "^2.9.34",
+    "google-images": "^0.1.0",
     "nodeunit": "^0.9.1",
+    "request-promise": "^0.4.3",
     "tracking": "^1.1.1"
   },
   "devDependencies": {
