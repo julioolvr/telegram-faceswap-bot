@@ -32,44 +32,37 @@ export function load(backgroundPath, newFacePath) {
 }
 
 export function swap({ background, newFace }) {
-  let canvas = new Canvas(200, 200);
-  let ctx = canvas.getContext('2d');
+  return new Promise((resolve, reject) => {
+    let canvas = new Canvas(200, 200);
+    let ctx = canvas.getContext('2d');
 
-  let backgroundImage = new Image();
-  let newFaceImage = new Image();
+    let backgroundImage = new Image();
+    let newFaceImage = new Image();
 
-  backgroundImage.src = background;
-  newFaceImage.src = newFace;
+    backgroundImage.src = background;
+    newFaceImage.src = newFace;
 
-  let tracker = new tracking.ObjectTracker(['face']);
-  tracker.setStepSize(2.0);
-  tracker.setEdgesDensity(0.1);
-  tracker.setInitialScale(4.0);
+    let tracker = new tracking.ObjectTracker(['face']);
+    tracker.setStepSize(2.0);
+    tracker.setEdgesDensity(0.1);
+    tracker.setInitialScale(4.0);
 
-  tracker.on('track', evt => {
-    evt.data.forEach(data => {
-      ctx.drawImage(newFaceImage, data.x, data.y, data.width, data.height);
+    tracker.on('track', evt => {
+      evt.data.forEach(data => {
+        ctx.drawImage(newFaceImage, data.x, data.y, data.width, data.height);
+      });
+
+      resolve(canvas.pngStream());
     });
 
-    let stream = canvas.pngStream();
-    let output = fs.createWriteStream('./test.png');
+    let { width, height } = proportionalSize(backgroundImage);
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(backgroundImage, 0, 0, width, height);
 
-    stream.on('data', chunk => {
-      output.write(chunk);
-    });
-
-    stream.on('end', () => {
-      console.log('Finished saving test.png');
-    });
+    // Calls canvas tracking directly instead of going through `document`
+    tracking.trackCanvas_(canvas, tracker); // eslint-disable-line no-underscore-dangle
   });
-
-  let { width, height } = proportionalSize(backgroundImage);
-  canvas.width = width;
-  canvas.height = height;
-  ctx.drawImage(backgroundImage, 0, 0, width, height);
-
-  // Calls canvas tracking directly instead of going through `document`
-  tracking.trackCanvas_(canvas, tracker); // eslint-disable-line no-underscore-dangle
 }
 
 export function searchGoogleImages(query) {
