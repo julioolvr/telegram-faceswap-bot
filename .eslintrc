@@ -15,6 +15,13 @@
         "semi": [
             2,
             "always"
+        ],
+        "camelcase": [
+            2,
+            { "properties": "never" }
+        ],
+        "consistent-return": [
+            0
         ]
     },
     "env": {

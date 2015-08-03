@@ -1,9 +1,12 @@
 import request from 'request-promise';
-import fs from 'fs';
 
 export default class {
     constructor(token) {
       this.baseUrl = `https://api.telegram.org/bot${token}`;
+    }
+
+    sendText(text, chatId) {
+      return request.post(`${this.baseUrl}/sendMessage`, { form: { text: text, chat_id: chatId } });
     }
 
     sendPhoto(buffer, chatId) {
