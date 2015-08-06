@@ -4,6 +4,7 @@ import imagesClient from 'google-images';
 import request from 'request';
 import cv from 'opencv';
 import images from 'images';
+import findFacePath from './functions/findFacePath';
 
 const MAX_SIZE = 1000;
 
@@ -22,7 +23,6 @@ function proportionalSize(width, height) {
 export function swap({ background, newFace }) {
   return new Promise((resolve, reject) => {
     let backgroundStream = new cv.ImageDataStream();
-
 
     backgroundStream.on('load', matrix => {
       let image = images(matrix.toBuffer());
@@ -51,14 +51,14 @@ export function searchGoogleImages(query) {
   return Promise.fromNode(imagesClient.search.bind(imagesClient, query));
 }
 
-export function fetchAndSwap(url, newFacePath) {
+export function fetchAndSwap(url, newFaceName) {
   return swap({
     background: request({ url, encoding: null }),
-    newFace: fs.readFileSync(newFacePath)
+    newFace: fs.readFileSync(findFacePath(newFaceName))
   });
 }
 
-export function searchAndSwap(query, newFacePath) {
+export function searchAndSwap(query, newFaceName) {
   let backgroundPromise = searchGoogleImages(query).then(googleImages => {
     if (googleImages.length === 0) {
       throw new Error('No images found');
@@ -70,6 +70,6 @@ export function searchAndSwap(query, newFacePath) {
 
   return Promise.props({
     background: backgroundPromise,
-    newFace: fs.readFileSync(newFacePath)
+    newFace: fs.readFileSync(findFacePath(newFaceName))
   }).then(swap);
 }

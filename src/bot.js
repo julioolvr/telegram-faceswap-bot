@@ -1,5 +1,6 @@
 import TelegramClient from './services/telegramClient';
 import * as swapper from './swapper';
+
 const telegramClient = new TelegramClient(process.env.BOT_TOKEN);
 
 const RESPONSE_TYPES = {
@@ -31,7 +32,7 @@ export default class {
           break;
       }
     }).catch(err => {
-      console.log('No response available for message "%s", error: %s', message.text, err);
+      console.log('No response available for message "%s", error: %s', message.text, err.stack);
     });
   }
 
@@ -61,6 +62,6 @@ export default class {
   }
 
   faceWithUrl([face, url]) {
-    return swapper.fetchAndSwap(url, `./img/${face}.png`); // TODO: Dir traversal protection
+    return swapper.fetchAndSwap(url, face);
   }
 }
