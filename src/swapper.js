@@ -51,14 +51,14 @@ export function searchGoogleImages(query) {
   return Promise.fromNode(imagesClient.search.bind(imagesClient, query));
 }
 
-export function fetchAndSwap(url, newFaceName) {
+export function fetchAndSwap(url, newFaceName, chatId) {
   return swap({
     background: request({ url, encoding: null }),
-    newFace: fs.readFileSync(findFacePath(newFaceName))
+    newFace: fs.readFileSync(findFacePath(newFaceName, chatId))
   });
 }
 
-export function searchAndSwap(query, newFaceName) {
+export function searchAndSwap(query, newFaceName, chatId) {
   let backgroundPromise = searchGoogleImages(query).then(googleImages => {
     if (googleImages.length === 0) {
       throw new Error('No images found');
@@ -70,6 +70,6 @@ export function searchAndSwap(query, newFaceName) {
 
   return Promise.props({
     background: backgroundPromise,
-    newFace: fs.readFileSync(findFacePath(newFaceName))
+    newFace: fs.readFileSync(findFacePath(newFaceName, chatId))
   }).then(swap);
 }

@@ -22,7 +22,7 @@ export default class {
       return;
     }
 
-    return this.respondToCommand(extractCommand(message.text)).then(commandResponse => {
+    return this.respondToCommand(extractCommand(message.text), message.chat.id).then(commandResponse => {
       switch (commandResponse.type) {
         case RESPONSE_TYPES.TEXT:
           telegramClient.sendText(commandResponse.content, message.chat.id);
@@ -36,7 +36,7 @@ export default class {
     });
   }
 
-  respondToCommand([command, args]) {
+  respondToCommand([command, args], chatId) {
     return new Promise((resolve, reject) => {
       if (!command) {
         reject('No command provided');
@@ -52,7 +52,7 @@ export default class {
       case 'faceWithUrl':
         resolve({
           type: RESPONSE_TYPES.PHOTO,
-          content: this.faceWithUrl(args.split(' ')) // TODO: Split somewhere else
+          content: this.faceWithUrl(args.split(' '), chatId) // TODO: Split somewhere else
         });
         break;
       default:
@@ -61,7 +61,7 @@ export default class {
     });
   }
 
-  faceWithUrl([face, url]) {
-    return swapper.fetchAndSwap(url, face);
+  faceWithUrl([face, url], chatId) {
+    return swapper.fetchAndSwap(url, face, chatId);
   }
 }
