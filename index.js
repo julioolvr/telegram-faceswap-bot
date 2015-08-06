@@ -2,6 +2,9 @@ var dotenv = require('dotenv');
 dotenv.config({ silent: true });
 dotenv.load();
 
+var path = require('path');
+global.rootPath = path.resolve(__dirname);
+
 require('babel/register');
 
 require('./src/server').listen(process.env.PORT, function() {

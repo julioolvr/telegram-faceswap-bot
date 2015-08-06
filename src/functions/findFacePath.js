@@ -1,6 +1,6 @@
 import path from 'path';
 
-const faceRootPath = path.join(path.dirname(require.main.filename), 'img');
+const faceRootPath = path.join(global.rootPath, 'img');
 
 export default function(name, chatId) {
   let facePath = path.join(faceRootPath, `${chatId}`, `${name}.png`);
