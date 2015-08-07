@@ -1,15 +1,20 @@
-import express from 'express';
-import bodyParser from 'body-parser';
 import Bot from './bot';
+import TelegramClient from './services/telegramClient';
 
-const app = express();
 const bot = new Bot();
+const telegramClient = new TelegramClient(process.env.BOT_TOKEN);
 
-app.use(bodyParser.json());
+class App {
+  start() {
+    this.waitForNextResponse();
+  }
 
-app.post('/update', (req, res) => {
-  bot.respondTo(req.body.message);
-  res.end();
-});
+  waitForNextResponse() {
+    telegramClient.getUpdates().then(messages => {
+      messages.forEach(bot.respondTo.bind(bot));
+      this.waitForNextResponse();
+    });
+  }
+}
 
-export default app;
+export default App;

@@ -13,9 +13,7 @@
   "dependencies": {
     "babel": "^5.8.5",
     "bluebird": "^2.9.34",
-    "body-parser": "^1.13.3",
     "dotenv": "^1.2.0",
-    "express": "^4.13.2",
     "google-images": "^0.1.0",
     "images": "^2.1.6",
     "opencv": "^3.0.0",

@@ -1,4 +1,5 @@
 import request from 'request-promise';
+import Promise from 'bluebird';
 
 export default class {
     constructor(token) {
@@ -20,5 +21,30 @@ export default class {
                                                               }
                                                             }, chat_id: chatId } });
       }.bind(this));
+    }
+
+    getUpdates() {
+      let options = { timeout: 60 };
+
+      if (this.lastOffset !== undefined) {
+        options.offset = this.lastOffset + 1;
+      }
+
+      return request.get({url: `${this.baseUrl}/getUpdates`, qs: options})
+        .then(response => {
+          const parsedResponse = JSON.parse(response)
+          return parsedResponse.result;
+        })
+        .then(updates => {
+          if (updates.length === 0) {
+            return [];
+          }
+
+          let ids = updates.map(update => update.update_id);
+          console.log(ids);
+          this.lastOffset = Math.max(...ids);
+          console.log('max id', this.lastOffset);
+          return updates.map(update => update.message);
+        });
     }
 }
