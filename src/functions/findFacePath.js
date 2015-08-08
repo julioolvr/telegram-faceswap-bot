@@ -1,11 +1,14 @@
 import path from 'path';
 
-const faceRootPath = path.join(global.rootPath, 'img');
+function getRootPath() {
+  return path.join(global.rootPath, 'img');
+}
 
 export default function(name, chatId) {
-  let facePath = path.join(faceRootPath, `${chatId}`, `${name}.png`);
+  let facePath = path.join(getRootPath(), chatId, `${name}.png`);
 
-  if (facePath.indexOf(faceRootPath) !== 0) {
+  console.log('got facepath', facePath);
+  if (facePath.indexOf(path.join(getRootPath(), chatId)) !== 0) {
     throw new Error('Tried to access a face outside the chat\'s path');
   }
 
