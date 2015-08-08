@@ -1,5 +1,4 @@
 import request from 'request-promise';
-import Promise from 'bluebird';
 
 export default class {
     constructor(token) {
@@ -31,10 +30,7 @@ export default class {
       }
 
       return request.get({url: `${this.baseUrl}/getUpdates`, qs: options})
-        .then(response => {
-          const parsedResponse = JSON.parse(response)
-          return parsedResponse.result;
-        })
+        .then(response => JSON.parse(response).result)
         .then(updates => {
           if (updates.length === 0) {
             return [];
