@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "lint": "eslint index.js src/",
-    "mocha": "mocha test/runner.js",
+    "mocha": "mocha --compilers js:babel/register ./test/**/*.js",
     "test": "npm run lint && npm run mocha"
   },
   "author": "Julio Olivera",
