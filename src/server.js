@@ -12,7 +12,6 @@ class App {
   }
 
   waitForNextResponse() {
-    console.log('allowed ids are', allowedChatIds);
     telegramClient.getUpdates().then(messages => {
       messages.forEach(message => {
         if (allowedChatIds.indexOf(message.chat.id.toString()) === -1) {

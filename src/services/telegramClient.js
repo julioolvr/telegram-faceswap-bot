@@ -1,8 +1,10 @@
 import request from 'request-promise';
 
+/**
+ * @class Client to communicate with Telegram's API.
+ */
 export default class {
   /**
-   * Builds a client for the given bot token.
    * @param {string} token Token for the bot provided by Telegram.
    */
   constructor(token) {
@@ -12,7 +14,7 @@ export default class {
   /**
    * Sends a text message to the given chatId.
    * @param  {string} text   Text to send on the message.
-   * @param  {string} chatId Id of the chat to send the message to.
+   * @param  {number} chatId Id of the chat to send the message to.
    * @return {Promise}       A promise for the request to Telegram's API.
    */
   sendText(text, chatId) {
@@ -22,7 +24,7 @@ export default class {
   /**
    * Sends a photo to the given chatId.
    * @param  {Promise} image  A promise that resolves with a buffer for the photo.
-   * @param  {string}  chatId Id of the chat to send the message to.
+   * @param  {number}  chatId Id of the chat to send the message to.
    * @return {Promise}        A promise for the request to Telegram's API.
    */
   sendPhoto(image, chatId) {

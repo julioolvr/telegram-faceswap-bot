@@ -11,7 +11,7 @@ import request from 'request-promise';
 import TelegramClient from '../../src/services/telegramClient';
 
 describe('TelegramClient', () => {
-  const chatId = '1234';
+  const chatId = 1234;
   const botToken = '123456abcdef';
   let client;
 
