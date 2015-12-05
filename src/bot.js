@@ -46,7 +46,7 @@ export default class {
           break;
       }
     }).catch(err => {
-      console.log('No response available for message "%s", error: %s', message.text, err.stack);
+      console.log('No response available for message "%s", error: %s', message.text, err, err.stack);
       throw err;
     });
   }
@@ -68,6 +68,12 @@ export default class {
         resolve({
           type: RESPONSE_TYPES.PHOTO,
           content: this.faceWithUrl(command.getParameters(), chatId) // TODO: Split somewhere else
+        });
+        break;
+      case COMMANDS.ADD_FACE:
+        resolve({
+          type: RESPONSE_TYPES.TEXT,
+          content: 'TODO: Will upload photo!'
         });
         break;
       default:

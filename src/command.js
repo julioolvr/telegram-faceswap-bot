@@ -34,7 +34,7 @@ export default class {
    */
   static messageIsCommand(message) {
     return (message.text && message.text.startsWith('/'))
-      || (message.photo && message.caption & message.caption.startsWith('/'));
+      || (message.photo && message.caption && message.caption.startsWith('/'));
   }
 
   constructor(message) {
@@ -60,7 +60,7 @@ export default class {
   }
 
   isValidPhotoCommand() {
-    this.message.caption && PHOTO_COMMANDS.includes(extractCommand(this.message.caption)[0]);
+    return this.message.caption && PHOTO_COMMANDS.includes(extractCommand(this.message.caption)[0]);
   }
 
   isValidTextCommand() {
