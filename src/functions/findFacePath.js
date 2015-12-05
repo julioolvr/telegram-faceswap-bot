@@ -5,9 +5,9 @@ function getRootPath() {
 }
 
 export default function(name, chatId) {
-  let facePath = path.join(getRootPath(), chatId, `${name}.png`);
+  let facePath = path.join(getRootPath(), String(chatId), `${name}.png`);
 
-  if (facePath.indexOf(path.join(getRootPath(), chatId)) !== 0) {
+  if (facePath.indexOf(path.join(getRootPath(), String(chatId))) !== 0) {
     throw new Error('Tried to access a face outside the chat\'s path');
   }
 

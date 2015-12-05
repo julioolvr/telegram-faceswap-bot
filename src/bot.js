@@ -37,7 +37,7 @@ export default class {
   /**
    * @param  {TelegramClient} [options.client] Inject a Telegram client, otherwise it will instantiate a new one.
    */
-  constructor({ client = new TelegramClient(process.env.BOT_TOKEN) }) {
+  constructor({ client = new TelegramClient(process.env.BOT_TOKEN) } = {}) {
     this.client = client;
   }
 
