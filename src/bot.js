@@ -32,7 +32,7 @@ export default class {
       return; // TODO: Move to the promise flow and reject it in this case
     }
 
-    var command = new Command(message);
+    var command = Command.build(message);
 
     return this.respondToCommand(command, message.chat.id).then(commandResponse => {
       // TODO: Make this promise resolve to something useful, or at a useful moment, like when the request to Telegram has
