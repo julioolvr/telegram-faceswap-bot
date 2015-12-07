@@ -33,8 +33,10 @@ class Command {
    * @return {boolean}        Whether the message is a valid command.
    */
   static messageIsCommand(message) {
-    return (message.text && message.text.startsWith('/'))
-      || (message.photo && message.caption && message.caption.startsWith('/'));
+    return (message.text && message.text.startsWith('/'));
+    // TODO: Removed support for caption commands, cleanup or add it back if needed.
+    // return (message.text && message.text.startsWith('/'))
+    //   || (message.photo && message.caption && message.caption.startsWith('/'));
   }
 
   static build(message) {
