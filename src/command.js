@@ -1,7 +1,5 @@
-const TEXT_COMMANDS = ['start', 'faceWithUrl'];
+const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine'];
 const PHOTO_COMMANDS = ['add'];
-// const TEXT_TYPE = 'TEXT';
-// const PHOTO_TYPE = 'PHOTO';
 
 /**
  * Extracts the command from the message and returns its composing parts.
@@ -65,6 +63,7 @@ class TextCommand extends Command {
     switch (extractCommand(this.message.text)[0]) {
     case 'start': return COMMANDS.START;
     case 'faceWithUrl': return COMMANDS.FACE_WITH_URL;
+    case 'combine': return COMMANDS.FACE_WITH_URL;
     }
   }
 }
