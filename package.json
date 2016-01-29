@@ -15,7 +15,7 @@
     "babel": "^5.8.5",
     "bluebird": "^2.9.34",
     "dotenv": "^1.2.0",
-    "google-images": "^0.1.0",
+    "google-images": "^0.1.4",
     "images": "^2.1.6",
     "opencv": "^3.0.0",
     "request": "^2.60.0",

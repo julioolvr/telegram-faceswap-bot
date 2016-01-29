@@ -1,4 +1,4 @@
-const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine'];
+const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face'];
 const PHOTO_COMMANDS = ['add'];
 
 /**
@@ -20,7 +20,8 @@ function extractCommand(message) {
 export const COMMANDS = {
   START: 'START',
   FACE_WITH_URL: 'FACE_WITH_URL',
-  ADD_FACE: 'ADD_FACE'
+  ADD_FACE: 'ADD_FACE',
+  FACE_SEARCH: 'FACE_SEARCH'
 };
 
 class Command {
@@ -56,7 +57,7 @@ class TextCommand extends Command {
   }
 
   getParameters() {
-    return extractCommand(this.message.text)[1].split(' ');
+    return extractCommand(this.message.text)[1].split('+');
   }
 
   getType() {
@@ -64,6 +65,7 @@ class TextCommand extends Command {
     case 'start': return COMMANDS.START;
     case 'faceWithUrl': return COMMANDS.FACE_WITH_URL;
     case 'combine': return COMMANDS.FACE_WITH_URL;
+    case 'face': return COMMANDS.FACE_SEARCH;
     }
   }
 }

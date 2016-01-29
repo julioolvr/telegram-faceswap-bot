@@ -76,6 +76,11 @@ export default class {
           content: 'TODO: Will upload photo!'
         });
         break;
+      case COMMANDS.FACE_SEARCH:
+        resolve({
+          type: RESPONSE_TYPES.PHOTO,
+          content: this.faceWithSearch(command.getParameters(), chatId)
+        });
       default:
         throw new Error(`Unknown command ${command.getType()}`);
       }
@@ -84,5 +89,9 @@ export default class {
 
   faceWithUrl([face, url], chatId) {
     return swapper.fetchAndSwap(url, face, chatId);
+  }
+
+  faceWithSearch([face, query], chatId) {
+    return swapper.searchAndSwap(query, face, chatId);
   }
 }
