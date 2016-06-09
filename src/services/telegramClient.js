@@ -30,13 +30,13 @@ export default class {
   sendPhoto(image, chatId) {
     return image.then(buffer => {
       return request.post(`${this.baseUrl}/sendPhoto`, { formData: {
-                                                          photo: {
-                                                            value: buffer,
-                                                            options: {
-                                                              contentType: 'image/png',
-                                                              filename: 'faceSwap.png'
-                                                            }
-                                                          }, chat_id: chatId } });
+        photo: {
+          value: buffer,
+          options: {
+            contentType: 'image/png',
+            filename: 'faceSwap.png'
+          }
+        }, chat_id: chatId } });
     });
   }
 

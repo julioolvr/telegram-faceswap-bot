@@ -38,12 +38,12 @@ export default class {
       // TODO: Make this promise resolve to something useful, or at a useful moment, like when the request to Telegram has
       // succeeded.
       switch (commandResponse.type) {
-        case RESPONSE_TYPES.TEXT:
-          this.client.sendText(commandResponse.content, message.chat.id);
-          break;
-        case RESPONSE_TYPES.PHOTO:
-          this.client.sendPhoto(commandResponse.content, message.chat.id);
-          break;
+      case RESPONSE_TYPES.TEXT:
+        this.client.sendText(commandResponse.content, message.chat.id);
+        break;
+      case RESPONSE_TYPES.PHOTO:
+        this.client.sendPhoto(commandResponse.content, message.chat.id);
+        break;
       }
     }).catch(err => {
       console.log('No response available for message "%s", error: %s', message.text, err, err.stack);
