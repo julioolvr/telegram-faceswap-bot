@@ -19,8 +19,7 @@
     "images": "^2.1.6",
     "node-telegram-bot-api": "^0.23.3",
     "opencv": "github:peterbraden/node-opencv#df9959a",
-    "request": "^2.60.0",
-    "request-promise": "^0.4.3"
+    "request": "^2.60.0"
   },
   "devDependencies": {
     "chai": "^3.2.0",
