@@ -1,27 +1,18 @@
 import Bot from './bot';
-import TelegramClient from './services/telegramClient';
 
-const bot = new Bot();
-const telegramClient = new TelegramClient(process.env.BOT_TOKEN);
-
-const allowedChatIds = process.env.ALLOWED_CHAT_IDS.split(';');
+const ALLOWED_CHAT_IDS = process.env.ALLOWED_CHAT_IDS.split(';');
 
 class App {
   start() {
-    this.waitForNextResponse();
-  }
+    const bot = new Bot(process.env.BOT_TOKEN);
 
-  waitForNextResponse() {
-    telegramClient.getUpdates().then(messages => {
-      messages.forEach(message => {
-        if (allowedChatIds.indexOf(message.chat.id.toString()) === -1) {
-          console.log('Unkown message from chat id', message.chat.id, message);
-          return;
-        }
+    bot.onMessage(msg => {
+      if (!ALLOWED_CHAT_IDS.includes(msg.chat.id.toString())) {
+        console.log('Got message from unknown id', msg.chat.id);
+        return false;
+      }
 
-        bot.respondTo(message);
-      });
-      this.waitForNextResponse();
+      bot.respondTo(msg);
     });
   }
 }

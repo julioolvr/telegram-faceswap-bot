@@ -1,4 +1,5 @@
-import TelegramClient from './services/telegramClient';
+import TelegramBot from 'node-telegram-bot-api';
+
 import Command from './command';
 import { COMMANDS } from './command';
 import * as swapper from './swapper';
@@ -13,10 +14,19 @@ const RESPONSE_TYPES = {
  */
 export default class {
   /**
-   * @param  {TelegramClient} [options.client] Inject a Telegram client, otherwise it will instantiate a new one.
+   * @param {string} token Telegram token for the bot.
    */
-  constructor({ client = new TelegramClient(process.env.BOT_TOKEN) } = {}) {
-    this.client = client;
+  constructor(token) {
+    this.client = new TelegramBot(token, { polling: true });
+    this.onMessageCallbacks = [];
+
+    this.client.on('message', (msg) => {
+      this.onMessageCallbacks.forEach(callback => callback(msg));
+    });
+  }
+
+  onMessage(callback) {
+    this.onMessageCallbacks.push(callback);
   }
 
   /**
@@ -39,10 +49,10 @@ export default class {
       // succeeded.
       switch (commandResponse.type) {
       case RESPONSE_TYPES.TEXT:
-        this.client.sendText(commandResponse.content, message.chat.id);
+        this.client.sendMessage(message.chat.id, commandResponse.content);
         break;
       case RESPONSE_TYPES.PHOTO:
-        this.client.sendPhoto(commandResponse.content, message.chat.id);
+        commandResponse.content.then(buffer => this.client.sendPhoto(message.chat.id, buffer));
         break;
       }
     }).catch(err => {

@@ -3,6 +3,7 @@ import chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
+import proxyquire from 'proxyquire';
 
 const { spy } = sinon;
 const { expect } = chai;
@@ -10,14 +11,17 @@ chai.use(sinonChai);
 chai.use(chaiAsPromised);
 
 import * as swapper from '../src/swapper';
-import Bot from '../src/bot';
+
+let telegramBotStub = {
+  sendMessage: spy(),
+  sendPhoto: spy(),
+  on: spy()
+};
+
+const Bot = proxyquire('../src/bot', { 'node-telegram-bot-api': () => telegramBotStub });
 
 describe('Bot', () => {
-  const telegramClient = {
-    sendText: spy(),
-    sendPhoto: spy()
-  };
-  const bot = new Bot({ client: telegramClient });
+  const bot = new Bot();
 
   describe('#respondTo', () => {
     it('returns immediately if the message is not a command', () => {
@@ -34,7 +38,7 @@ describe('Bot', () => {
       describe('/start', () => {
         it('sends a text message', () => {
           return bot.respondTo({ text: '/start', chat: { id: chatId } }).then(() => {
-            expect(telegramClient.sendText).to.have.been.calledWith(sinon.match.string, chatId);
+            expect(telegramBotStub.sendMessage).to.have.been.calledWith(chatId, sinon.match.string);
           });
         });
       });
@@ -44,8 +48,9 @@ describe('Bot', () => {
         const url = 'http://example.com/image.png';
 
         beforeEach(() => {
-          sinon.stub(swapper, 'fetchAndSwap');
+          sinon.stub(swapper, 'fetchAndSwap').returns({ then: spy() });
         });
+
         afterEach(() => {
           swapper.fetchAndSwap.restore();
         });
@@ -57,11 +62,12 @@ describe('Bot', () => {
         });
 
         it('sends a photo', () => {
-          const bufferPromise = {};
+          const buffer = {};
+          const bufferPromise = { then: (cb) => cb(buffer) };
           swapper.fetchAndSwap.returns(bufferPromise);
 
-          return bot.respondTo({ text: `/faceWithUrl ${faceName} ${url}`, chat: { id: chatId } }).then(() => {
-            expect(telegramClient.sendPhoto).to.have.been.calledWith(bufferPromise, chatId);
+          return bot.respondTo({ text: `/faceWithUrl ${faceName}+${url}`, chat: { id: chatId } }).then(() => {
+            expect(telegramBotStub.sendPhoto).to.have.been.calledWith(chatId, buffer);
           });
         });
       });

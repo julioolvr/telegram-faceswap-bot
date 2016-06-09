@@ -17,6 +17,7 @@
     "dotenv": "^1.2.0",
     "google-images": "^0.1.4",
     "images": "^2.1.6",
+    "node-telegram-bot-api": "^0.23.3",
     "opencv": "github:peterbraden/node-opencv#df9959a",
     "request": "^2.60.0",
     "request-promise": "^0.4.3"
@@ -27,6 +28,7 @@
     "eslint": "^2.0.0",
     "mocha": "^2.2.5",
     "nodemon": "^1.3.8",
+    "proxyquire": "^1.7.9",
     "sinon": "^1.15.4",
     "sinon-chai": "^2.8.0"
   }
