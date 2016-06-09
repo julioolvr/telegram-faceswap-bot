@@ -61,6 +61,14 @@ export default class {
     });
   }
 
+  /**
+   * Returns a response object for the given {Command} to the given chat id.
+   *
+   * @param  {Command} command
+   * @param  {number} chatId
+   * @return {Promise} Promise that resolves with the type of the response and its content,
+   *                   or is rejected if no valid command is found.
+   */
   respondToCommand(command, chatId) {
     return new Promise((resolve, reject) => {
       if (!command.isValid()) {
@@ -77,7 +85,7 @@ export default class {
       case COMMANDS.FACE_WITH_URL:
         resolve({
           type: RESPONSE_TYPES.PHOTO,
-          content: this.faceWithUrl(command.getParameters(), chatId) // TODO: Split somewhere else
+          content: this.faceWithUrl(command.getParameters(), chatId)
         });
         break;
       case COMMANDS.ADD_FACE:
