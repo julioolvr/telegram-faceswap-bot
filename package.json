@@ -17,7 +17,7 @@
     "dotenv": "^1.2.0",
     "google-images": "^0.1.4",
     "images": "^2.1.6",
-    "opencv": "^3.0.0",
+    "opencv": "github:peterbraden/node-opencv#df9959a",
     "request": "^2.60.0",
     "request-promise": "^0.4.3"
   },
