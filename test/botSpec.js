@@ -51,7 +51,7 @@ describe('Bot', () => {
         });
 
         it('uses the swapper with the provided face name and URL', () => {
-          return bot.respondTo({ text: `/faceWithUrl ${faceName} ${url}`, chat: { id: chatId } }).then(() => {
+          return bot.respondTo({ text: `/faceWithUrl ${faceName}+${url}`, chat: { id: chatId } }).then(() => {
             expect(swapper.fetchAndSwap).to.have.been.calledWith(url, faceName, chatId);
           });
         });
