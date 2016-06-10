@@ -15,7 +15,7 @@
     "babel": "^5.8.5",
     "bluebird": "^2.9.34",
     "dotenv": "^1.2.0",
-    "google-images": "^0.1.4",
+    "got": "^6.3.0",
     "images": "^2.1.6",
     "node-telegram-bot-api": "^0.23.3",
     "opencv": "github:peterbraden/node-opencv#df9959a",

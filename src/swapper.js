@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 import fs from 'fs';
-import imagesClient from 'google-images';
+import * as googleImages from './services/googleImages';
 import request from 'request';
 import cv from 'opencv';
 import images from 'images';
@@ -47,10 +47,6 @@ export function swap({ background, newFace }) {
   });
 }
 
-export function searchGoogleImages(query) {
-  return Promise.fromNode(imagesClient.search.bind(imagesClient, query));
-}
-
 export function fetchAndSwap(url, newFaceName, chatId) {
   return swap({
     background: request({ url, encoding: null }),
@@ -59,13 +55,13 @@ export function fetchAndSwap(url, newFaceName, chatId) {
 }
 
 export function searchAndSwap(query, newFaceName, chatId) {
-  let backgroundPromise = searchGoogleImages(query).then(googleImages => {
-    if (googleImages.length === 0) {
+  let backgroundPromise = googleImages.search(query).then(imagesUrls => {
+    if (imagesUrls.length === 0) {
       throw new Error('No images found');
     }
 
     // TODO: Handle that maybe some URLs end up not being images
-    return request({ url: googleImages[0].url, encoding: null });
+    return request({ url: imagesUrls[Math.floor(Math.random() * imagesUrls.length)], encoding: null });
   });
 
   return Promise.props({
