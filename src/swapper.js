@@ -32,6 +32,8 @@ export function swap({ background, newFace }) {
       matrix.detectObject(cv.FACE_CASCADE, {}, (err, faces) => {
         if (err) {
           reject(err); // TODO: Better error messages
+        } else if (faces.length === 0) {
+          reject('Couldn\'t find any face on that image');
         } else {
           faces.forEach(face => {
             let newFaceImage = images(newFace).size(face.width * resizeRatio, face.height * resizeRatio);
@@ -55,17 +57,23 @@ export function fetchAndSwap(url, newFaceName, chatId) {
 }
 
 export function searchAndSwap(query, newFaceName, chatId) {
-  let backgroundPromise = googleImages.search(query).then(imagesUrls => {
+  return googleImages.search(query).then(imagesUrls => {
     if (imagesUrls.length === 0) {
       throw new Error('No images found');
     }
 
-    // TODO: Handle that maybe some URLs end up not being images
-    return request({ url: imagesUrls[Math.floor(Math.random() * imagesUrls.length)], encoding: null });
+    return multipleFetchAndSwap(imagesUrls, newFaceName, chatId);
   });
+}
 
-  return Promise.props({
-    background: backgroundPromise,
-    newFace: fs.readFileSync(findFacePath(newFaceName, chatId))
-  }).then(swap);
+function multipleFetchAndSwap(urls, newFaceName, chatId) {
+  return new Promise((resolve, reject) => {
+    if (urls.length === 0) {
+      reject('No face found on any url');
+    } else {
+      resolve(fetchAndSwap(urls[0], newFaceName, chatId).catch(err => {
+        return multipleFetchAndSwap(urls.slice(1), newFaceName, chatId);
+      }));
+    }
+  });
 }
