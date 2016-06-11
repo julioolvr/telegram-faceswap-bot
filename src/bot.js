@@ -1,8 +1,14 @@
 import TelegramBot from 'node-telegram-bot-api';
+import got from 'got';
+import Promise from 'bluebird';
+import fs from 'fs';
 
 import Command from './command';
 import { COMMANDS } from './command';
 import * as swapper from './swapper';
+import { findFaceDirectory, findFacePath } from './functions/findFacePath';
+
+Promise.promisifyAll(fs);
 
 const RESPONSE_TYPES = {
   TEXT: 'TEXT',
@@ -52,7 +58,7 @@ export default class {
     } else if (replies) {
       responsePromise = this.replyTo(message, replies[0], replies.slice(1));
     } else {
-      return Promise.reject('Invalid message');
+      return;
     }
 
     return responsePromise.then(commandResponse => {
@@ -71,7 +77,7 @@ export default class {
         }).then(sent => {
           this.client.onReplyToMessage(sent.chat.id, sent.message_id, (reply) => {
             commandResponse.originalMessage = message;
-            this.respondTo(reply, [commandResponse].concat(replies));
+            this.respondTo(reply, [commandResponse].concat(replies || []));
           });
         });
         break;
@@ -86,10 +92,22 @@ export default class {
     return new Promise((resolve, reject) => {
       switch(lastReply.replyType) {
       case REPLY_TYPES.FACE_NAME:
-        resolve({
-          type: RESPONSE_TYPES.TEXT,
-          content: `Got it! Name was ${message.text}`
-        });
+        let biggestPhoto = lastReply.originalMessage.photo.sort((a, b) => a.file_size < b.file_size)[0];
+
+        fs.mkdirAsync(findFaceDirectory(message.chat.id))
+          .catch(() => {})
+          .then(() => this.client.getFileLink(biggestPhoto.file_id))
+          .then(fileLink => {
+            got
+              .stream(fileLink, { encoding: null })
+              .pipe(fs.createWriteStream(findFacePath(message.text, message.chat.id)));
+          })
+          .then(() => {
+            resolve({
+              type: RESPONSE_TYPES.TEXT,
+              content: `Got it! Name was ${message.text}`
+            });
+          });
         break;
       case REPLY_TYPES.ADD_FACE:
         resolve({

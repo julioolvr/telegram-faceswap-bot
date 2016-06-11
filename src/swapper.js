@@ -4,7 +4,7 @@ import * as googleImages from './services/googleImages';
 import request from 'request';
 import cv from 'opencv';
 import images from 'images';
-import findFacePath from './functions/findFacePath';
+import { findFacePath } from './functions/findFacePath';
 
 const MAX_SIZE = 1000;
 

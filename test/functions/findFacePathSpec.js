@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import path from 'path';
 
-import findFacePath from '../../src/functions/findFacePath';
+import { findFacePath } from '../../src/functions/findFacePath';
 
 describe('findFacePath', () => {
   const rootPath = path.join('some', 'root', 'path');
