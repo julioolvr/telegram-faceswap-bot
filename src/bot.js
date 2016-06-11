@@ -43,14 +43,14 @@ export default class {
    * @return {Promise|undefined}      A promise that won't resolve to anything useful yet. `undefined` if the message
    *                                  is not a command.
    */
-  respondTo(message, replyingToResponse) {
+  respondTo(message, replies) {
     let command = new Command(message);
     let responsePromise;
 
     if (command.isValid()) {
       responsePromise = this.respondToCommand(command, message.chat.id);
-    } else if (replyingToResponse) {
-      responsePromise = this.replyTo(message, replyingToResponse);
+    } else if (replies) {
+      responsePromise = this.replyTo(message, replies[0], replies.slice(1));
     } else {
       return Promise.reject('Invalid message');
     }
@@ -70,7 +70,8 @@ export default class {
           reply_markup: JSON.stringify({ force_reply: true })
         }).then(sent => {
           this.client.onReplyToMessage(sent.chat.id, sent.message_id, (reply) => {
-            this.respondTo(reply, commandResponse);
+            commandResponse.originalMessage = message;
+            this.respondTo(reply, [commandResponse].concat(replies));
           });
         });
         break;
@@ -81,9 +82,9 @@ export default class {
     });
   }
 
-  replyTo(message, replyResponse) {
+  replyTo(message, lastReply, otherReplies) {
     return new Promise((resolve, reject) => {
-      switch(replyResponse.replyType) {
+      switch(lastReply.replyType) {
       case REPLY_TYPES.FACE_NAME:
         resolve({
           type: RESPONSE_TYPES.TEXT,
@@ -98,7 +99,7 @@ export default class {
         });
         break;
       default:
-        reject(`Unknown reply type ${replyResponse.type}`);
+        reject(`Unknown reply type ${lastReply.type}`);
       }
     });
   }
