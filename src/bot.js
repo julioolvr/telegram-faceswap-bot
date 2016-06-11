@@ -92,11 +92,9 @@ export default class {
     return new Promise((resolve, reject) => {
       switch(lastReply.replyType) {
       case REPLY_TYPES.FACE_NAME:
-        let biggestPhoto = lastReply.originalMessage.photo.sort((a, b) => a.file_size < b.file_size)[0];
-
         fs.mkdirAsync(findFaceDirectory(message.chat.id))
           .catch(() => {})
-          .then(() => this.client.getFileLink(biggestPhoto.file_id))
+          .then(() => this.client.getFileLink(lastReply.originalMessage.document.file_id))
           .then(fileLink => {
             got
               .stream(fileLink, { encoding: null })
@@ -148,7 +146,7 @@ export default class {
       case COMMANDS.ADD_FACE:
         resolve({
           type: RESPONSE_TYPES.FORCE_REPLY,
-          content: 'Send me the image of the face',
+          content: 'Send me the image of the face AS A FILE! Otherwise you\'ll lose the transparency',
           replyType: REPLY_TYPES.ADD_FACE
         });
       case COMMANDS.SEND_FACE:
