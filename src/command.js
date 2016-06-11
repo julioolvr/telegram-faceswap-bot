@@ -1,5 +1,4 @@
-const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face'];
-const PHOTO_COMMANDS = ['add'];
+const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face', 'add'];
 
 /**
  * Extracts the command from the message and returns its composing parts.
@@ -14,7 +13,8 @@ const PHOTO_COMMANDS = ['add'];
  */
 function extractCommand(message) {
   // TODO: Return parameters as elements in the array instead of a single string
-  return message.match(/\/(\w+)(?:@\w+)?(?:\s+(.+))?/).slice(1);
+  let match = message.match(/\/(\w+)(?:@\w+)?(?:\s+(.+))?/);
+  return match && match.slice(1);
 }
 
 export const COMMANDS = {
@@ -25,34 +25,15 @@ export const COMMANDS = {
 };
 
 class Command {
-  /**
-   * Checks if the given message is a valid command.
-   * A message is a command if its text starts with '/', or if it's a picture whose caption starts with '/'.
-   * @param  {object} message Message from Telegram.
-   * @return {boolean}        Whether the message is a valid command.
-   */
-  static messageIsCommand(message) {
-    return (message.text && message.text.startsWith('/'));
-    // TODO: Removed support for caption commands, cleanup or add it back if needed.
-    // return (message.text && message.text.startsWith('/'))
-    //   || (message.photo && message.caption && message.caption.startsWith('/'));
-  }
-
-  static build(message) {
-    if (message.photo) {
-      return new PhotoCommand(message);
-    } else {
-      return new TextCommand(message);
-    }
-  }
-
   constructor(message) {
     this.message = message;
   }
-}
 
-class TextCommand extends Command {
   isValid() {
+    if (this.message.reply_to_message) {
+      return false;
+    }
+
     return TEXT_COMMANDS.includes(extractCommand(this.message.text)[0]);
   }
 
@@ -66,21 +47,6 @@ class TextCommand extends Command {
     case 'faceWithUrl': return COMMANDS.FACE_WITH_URL;
     case 'combine': return COMMANDS.FACE_WITH_URL;
     case 'face': return COMMANDS.FACE_SEARCH;
-    }
-  }
-}
-
-class PhotoCommand extends Command {
-  isValid() {
-    return this.message.caption && PHOTO_COMMANDS.includes(extractCommand(this.message.caption)[0]);
-  }
-
-  getParameters() {
-    return extractCommand(this.message.caption)[1].split(' ');
-  }
-
-  getType() {
-    switch (extractCommand(this.message.caption)[0]) {
     case 'add': return COMMANDS.ADD_FACE;
     }
   }

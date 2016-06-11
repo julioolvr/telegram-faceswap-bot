@@ -6,7 +6,13 @@ import * as swapper from './swapper';
 
 const RESPONSE_TYPES = {
   TEXT: 'TEXT',
-  PHOTO: 'PHOTO'
+  PHOTO: 'PHOTO',
+  FORCE_REPLY: 'FORCE_REPLY'
+};
+
+const REPLY_TYPES = {
+  FACE_NAME: 'FACE_NAME',
+  ADD_FACE: 'ADD_FACE'
 };
 
 /**
@@ -37,14 +43,19 @@ export default class {
    * @return {Promise|undefined}      A promise that won't resolve to anything useful yet. `undefined` if the message
    *                                  is not a command.
    */
-  respondTo(message) {
-    if (!Command.messageIsCommand(message)) {
-      return; // TODO: Move to the promise flow and reject it in this case
+  respondTo(message, replyingToResponse) {
+    let command = new Command(message);
+    let responsePromise;
+
+    if (command.isValid()) {
+      responsePromise = this.respondToCommand(command, message.chat.id);
+    } else if (replyingToResponse) {
+      responsePromise = this.replyTo(message, replyingToResponse);
+    } else {
+      return Promise.reject('Invalid message');
     }
 
-    var command = Command.build(message);
-
-    return this.respondToCommand(command, message.chat.id).then(commandResponse => {
+    return responsePromise.then(commandResponse => {
       // TODO: Make this promise resolve to something useful, or at a useful moment, like when the request to Telegram has
       // succeeded.
       switch (commandResponse.type) {
@@ -54,10 +65,41 @@ export default class {
       case RESPONSE_TYPES.PHOTO:
         commandResponse.content.then(buffer => this.client.sendPhoto(message.chat.id, buffer));
         break;
+      case RESPONSE_TYPES.FORCE_REPLY:
+        this.client.sendMessage(message.chat.id, commandResponse.content, {
+          reply_markup: JSON.stringify({ force_reply: true })
+        }).then(sent => {
+          this.client.onReplyToMessage(sent.chat.id, sent.message_id, (reply) => {
+            this.respondTo(reply, commandResponse);
+          });
+        });
+        break;
       }
     }).catch(err => {
-      console.log('No response available for message "%s", error: %s', message.text, err, err.stack);
+      console.log('No response available for message "%s", error: %s', message.text, err.stack);
       throw err;
+    });
+  }
+
+  replyTo(message, replyResponse) {
+    return new Promise((resolve, reject) => {
+      switch(replyResponse.replyType) {
+      case REPLY_TYPES.FACE_NAME:
+        resolve({
+          type: RESPONSE_TYPES.TEXT,
+          content: `Got it! Name was ${message.text}`
+        });
+        break;
+      case REPLY_TYPES.ADD_FACE:
+        resolve({
+          type: RESPONSE_TYPES.FORCE_REPLY,
+          content: 'Got it! Now tell me the name for the face',
+          replyType: REPLY_TYPES.FACE_NAME
+        });
+        break;
+      default:
+        reject(`Unknown reply type ${replyResponse.type}`);
+      }
     });
   }
 
@@ -71,10 +113,6 @@ export default class {
    */
   respondToCommand(command, chatId) {
     return new Promise((resolve, reject) => {
-      if (!command.isValid()) {
-        reject('Invalid command');
-      }
-
       switch (command.getType()) {
       case COMMANDS.START:
         resolve({
@@ -90,8 +128,15 @@ export default class {
         break;
       case COMMANDS.ADD_FACE:
         resolve({
-          type: RESPONSE_TYPES.TEXT,
-          content: 'TODO: Will upload photo!'
+          type: RESPONSE_TYPES.FORCE_REPLY,
+          content: 'Send me the image of the face',
+          replyType: REPLY_TYPES.ADD_FACE
+        });
+      case COMMANDS.SEND_FACE:
+        resolve({
+          type: RESPONSE_TYPES.FORCE_REPLY,
+          content: 'What\'s the name of the new face?',
+          replyType: REPLY_TYPES.FACE_NAME
         });
         break;
       case COMMANDS.FACE_SEARCH:
@@ -100,7 +145,7 @@ export default class {
           content: this.faceWithSearch(command.getParameters(), chatId)
         });
       default:
-        throw new Error(`Unknown command ${command.getType()}`);
+        reject(`Unknown command ${command.getType()}`);
       }
     });
   }
