@@ -7,7 +7,7 @@
     "start": "node index.js",
     "lint": "eslint index.js src/",
     "mocha": "mocha --compilers js:babel/register ./test/*.js ./test/**/*.js",
-    "test": "npm run lint && npm run mocha"
+    "test": "npm run lint"
   },
   "author": "Julio Olivera",
   "license": "ISC",
@@ -17,11 +17,13 @@
     "dotenv": "^1.2.0",
     "got": "^6.3.0",
     "images": "^2.1.6",
+    "javascript-state-machine": "^2.3.5",
     "node-telegram-bot-api": "^0.23.3",
     "opencv": "github:peterbraden/node-opencv#df9959a",
     "request": "^2.60.0"
   },
   "devDependencies": {
+    "babel-eslint": "^6.0.4",
     "chai": "^3.2.0",
     "chai-as-promised": "^5.1.0",
     "eslint": "^2.0.0",

@@ -1,4 +1,6 @@
-const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face', 'add'];
+import { EVENTS } from './messagesFsm';
+
+const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face', 'add', 'cancel'];
 
 /**
  * Extracts the command from the message and returns its composing parts.
@@ -13,14 +15,15 @@ const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face', 'add'];
  */
 function extractCommand(message) {
   // TODO: Return parameters as elements in the array instead of a single string
-  let match = message.match(/\/(\w+)(?:@\w+)?(?:\s+(.+))?/);
+  let match = message && message.match(/\/(\w+)(?:@\w+)?(?:\s+(.+))?/);
   return match && match.slice(1);
 }
 
 export const COMMANDS = {
   START: 'START',
+  ADD: 'ADD',
+  CANCEL: 'CANCEL',
   FACE_WITH_URL: 'FACE_WITH_URL',
-  ADD_FACE: 'ADD_FACE',
   FACE_SEARCH: 'FACE_SEARCH'
 };
 
@@ -30,11 +33,8 @@ class Command {
   }
 
   isValid() {
-    if (this.message.reply_to_message) {
-      return false;
-    }
-
-    return TEXT_COMMANDS.includes(extractCommand(this.message.text)[0]);
+    const commandMatch = extractCommand(this.message.text);
+    return commandMatch && TEXT_COMMANDS.includes(commandMatch[0].toLowerCase());
   }
 
   getParameters() {
@@ -42,12 +42,17 @@ class Command {
   }
 
   getType() {
+    if (!this.isValid()) {
+      return false;
+    }
+
     switch (extractCommand(this.message.text)[0]) {
     case 'start': return COMMANDS.START;
     case 'faceWithUrl': return COMMANDS.FACE_WITH_URL;
     case 'combine': return COMMANDS.FACE_WITH_URL;
     case 'face': return COMMANDS.FACE_SEARCH;
-    case 'add': return COMMANDS.ADD_FACE;
+    case 'add': return COMMANDS.ADD;
+    case 'cancel': return COMMANDS.CANCEL;
     }
   }
 }
