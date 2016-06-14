@@ -147,7 +147,8 @@ export default class MessagesFsm {
     let options = {}
 
     if (forceReply) {
-      options.reply_markup = JSON.stringify({ force_reply: true })
+      options.reply_markup = JSON.stringify({ force_reply: true, selective: true })
+      options.reply_to_message_id = message.message_id
     }
 
     this.lastMessageSent = this.client.sendMessage(message.chat.id, reply, options)
