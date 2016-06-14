@@ -1,6 +1,6 @@
 import { EVENTS } from './messagesFsm'
 
-const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face', 'add', 'cancel']
+const TEXT_COMMANDS = ['start', 'faceWithUrl', 'combine', 'face', 'add', 'cancel', 'faces']
 
 /**
  * Extracts the command from the message and returns its composing parts.
@@ -24,7 +24,8 @@ export const COMMANDS = {
   ADD: 'ADD',
   CANCEL: 'CANCEL',
   FACE_WITH_URL: 'FACE_WITH_URL',
-  FACE_SEARCH: 'FACE_SEARCH'
+  FACE_SEARCH: 'FACE_SEARCH',
+  LIST_FACES: 'LIST_FACES'
 }
 
 class Command {
@@ -53,6 +54,7 @@ class Command {
     case 'face': return COMMANDS.FACE_SEARCH
     case 'add': return COMMANDS.ADD
     case 'cancel': return COMMANDS.CANCEL
+    case 'faces': return COMMANDS.LIST_FACES
     }
   }
 }

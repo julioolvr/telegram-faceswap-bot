@@ -11,7 +11,7 @@ import * as swapper from './swapper'
 Promise.promisifyAll(fs)
 
 const FINAL = 'final'
-const SINGLE_COMMANDS = [COMMANDS.FACE_SEARCH, COMMANDS.FACE_WITH_URL, COMMANDS.START]
+const SINGLE_COMMANDS = [COMMANDS.FACE_SEARCH, COMMANDS.FACE_WITH_URL, COMMANDS.START, COMMANDS.LIST_FACES]
 
 export const EVENTS = {
   START: 'start',
@@ -167,6 +167,9 @@ export default class MessagesFsm {
     case COMMANDS.FACE_SEARCH:
       this.respondToFaceSearch(message, command)
       break
+    case COMMANDS.LIST_FACES:
+      this.respondToFaceList(message)
+      break
     }
   }
 
@@ -184,6 +187,15 @@ export default class MessagesFsm {
     let [face, query] = command.getParameters()
     let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
     this.client.sendPhoto(message.chat.id, buffer)
+  }
+
+  async respondToFaceList(message) {
+    const fileNames = await fs.readdirAsync(findFaceDirectory(message.chat.id))
+    const imagesFileNames = fileNames
+      .filter(fileName => fileName.endsWith('.png'))
+      .map(imageFileName => imageFileName.replace(/\.png$/, ''))
+
+    this.replyTo(message, `The available faces are ${imagesFileNames.join(', ')}`)
   }
 
   saveNewPicture(chatId, name, pictureId) {
