@@ -6,12 +6,13 @@ import got from 'got'
 import Command from './command'
 import { COMMANDS } from './command'
 import { findFaceDirectory, findFacePath } from './functions/findFacePath'
+import helpMessages from './helpMessages'
 import * as swapper from './swapper'
 
 Promise.promisifyAll(fs)
 
 const FINAL = 'final'
-const SINGLE_COMMANDS = [COMMANDS.FACE_SEARCH, COMMANDS.FACE_WITH_URL, COMMANDS.START, COMMANDS.LIST_FACES]
+const SINGLE_COMMANDS = [COMMANDS.FACE_SEARCH, COMMANDS.FACE_WITH_URL, COMMANDS.START, COMMANDS.LIST_FACES, COMMANDS.HELP]
 
 export const EVENTS = {
   START: 'start',
@@ -159,7 +160,8 @@ export default class MessagesFsm {
 
     switch(command.getType()) {
     case COMMANDS.START:
-      this.respondToStart(message)
+    case COMMANDS.HELP:
+      this.respondToHelpMessage(message, command)
       break
     case COMMANDS.FACE_WITH_URL:
       this.respondToFaceWithUrl(message, command)
@@ -173,8 +175,8 @@ export default class MessagesFsm {
     }
   }
 
-  respondToStart(message) {
-    this.replyTo(message, 'Hello!')
+  respondToHelpMessage(message, command) {
+    this.replyTo(message, helpMessages[command.getType()])
   }
 
   async respondToFaceWithUrl(message, command) {
