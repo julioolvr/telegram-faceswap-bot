@@ -14,7 +14,7 @@
         ],
         "semi": [
             2,
-            "always"
+            "never"
         ],
         "camelcase": [
             2,

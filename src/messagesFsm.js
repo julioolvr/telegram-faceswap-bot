@@ -1,17 +1,17 @@
-import StateMachine from 'javascript-state-machine';
-import fs from 'fs';
-import Promise from 'bluebird';
-import got from 'got';
+import StateMachine from 'javascript-state-machine'
+import fs from 'fs'
+import Promise from 'bluebird'
+import got from 'got'
 
-import Command from './command';
-import { COMMANDS } from './command';
-import { findFaceDirectory, findFacePath } from './functions/findFacePath';
-import * as swapper from './swapper';
+import Command from './command'
+import { COMMANDS } from './command'
+import { findFaceDirectory, findFacePath } from './functions/findFacePath'
+import * as swapper from './swapper'
 
-Promise.promisifyAll(fs);
+Promise.promisifyAll(fs)
 
-const FINAL = 'final';
-const SINGLE_COMMANDS = [COMMANDS.FACE_SEARCH, COMMANDS.FACE_WITH_URL, COMMANDS.START];
+const FINAL = 'final'
+const SINGLE_COMMANDS = [COMMANDS.FACE_SEARCH, COMMANDS.FACE_WITH_URL, COMMANDS.START]
 
 export const EVENTS = {
   START: 'start',
@@ -24,7 +24,7 @@ export const EVENTS = {
   CANCEL_OVERRIDE: 'canceloverride',
   GOT_NAME: 'gotname',
   SINGLE_COMMAND: 'singlecommand'
-};
+}
 
 function decorateFsm(target) {
   return StateMachine.create({
@@ -42,147 +42,147 @@ function decorateFsm(target) {
       { name: EVENTS.CANCEL_OVERRIDE, from: 'overridename', to: 'waitingname' },
       { name: EVENTS.GOT_NAME, from: ['waitingname', 'overridename'], to: FINAL }
     ]
-  });
+  })
 }
 
 export default class MessagesFsm {
   constructor(client) {
-    this.client = client;
-    decorateFsm(this);
+    this.client = client
+    decorateFsm(this)
   }
 
   getEventForMessage(message) {
-    const command = new Command(message);
+    const command = new Command(message)
 
     if (this.is('waitingmessage')) {
       if (command.getType() === COMMANDS.ADD) {
-        return EVENTS.ADD;
+        return EVENTS.ADD
       } else if (SINGLE_COMMANDS.includes(command.getType())) {
-        return EVENTS.SINGLE_COMMAND;
+        return EVENTS.SINGLE_COMMAND
       } else {
-        return;
+        return
       }
     }
 
     if (this.is('waitingpic')) {
       if (command.getType() !== COMMANDS.CANCEL) {
-        return message.document ? EVENTS.GOT_FILE : EVENTS.GOT_INVALID_FILE;
+        return message.document ? EVENTS.GOT_FILE : EVENTS.GOT_INVALID_FILE
       }
     }
 
     if (this.is('waitingname')) {
-      const name = message.text && message.text.toLowerCase();
-      const validName = name && /^\w+$/.test(name);
-      let existingName;
+      const name = message.text && message.text.toLowerCase()
+      const validName = name && /^\w+$/.test(name)
+      let existingName
 
       try {
         if (validName) {
-          fs.accessSync(findFacePath(name, message.chat.id));
-          existingName = true;
+          fs.accessSync(findFacePath(name, message.chat.id))
+          existingName = true
         } else {
-          existingName = false;
+          existingName = false
         }
       } catch (e) {
-        existingName = false;
+        existingName = false
       }
 
       if (existingName) {
-        return EVENTS.EXISTING_NAME;
+        return EVENTS.EXISTING_NAME
       }
 
       if (!validName) {
-        return EVENTS.INVALID_NAME;
+        return EVENTS.INVALID_NAME
       }
 
-      return EVENTS.GOT_NAME;
+      return EVENTS.GOT_NAME
     }
 
     if (this.is('overridename')) {
       if (message.text && message.text.toLowerCase() === 'yes') {
-        return EVENTS.GOT_NAME;
+        return EVENTS.GOT_NAME
       }
 
       if (message.text && message.text.toLowerCase() === 'no') {
-        return EVENTS.CANCEL_OVERRIDE;
+        return EVENTS.CANCEL_OVERRIDE
       }
     }
 
     if (command.getType() === COMMANDS.CANCEL) {
-      return EVENTS.CANCEL;
+      return EVENTS.CANCEL
     }
   }
 
   addMessage(message) {
-    const event = this.getEventForMessage(message);
+    const event = this.getEventForMessage(message)
 
     if (!event || this.cannot(event)) {
       if (!this.is('waitingmessage')) {
-        this.replyTo(message, 'I didn\'t expect that');
+        this.replyTo(message, 'I didn\'t expect that')
       }
 
-      this.current = FINAL;
-      return false;
+      this.current = FINAL
+      return false
     }
 
-    this[event](message);
+    this[event](message)
   }
 
   onSentMessage() {
-    return this.lastMessageSent;
+    return this.lastMessageSent
   }
 
   onReplyReceived() {
     return new Promise((resolve, reject) => {
       this.onSentMessage().then(sent => {
-        this.client.onReplyToMessage(sent.chat.id, sent.message_id, resolve);
-      }).catch(reject);
-    });
+        this.client.onReplyToMessage(sent.chat.id, sent.message_id, resolve)
+      }).catch(reject)
+    })
   }
 
   isWaitingForReply() {
-    return !this.isFinished();
+    return !this.isFinished()
   }
 
   replyTo(message, reply, forceReply) {
-    let options = {};
+    let options = {}
 
     if (forceReply) {
-      options.reply_markup = JSON.stringify({ force_reply: true });
+      options.reply_markup = JSON.stringify({ force_reply: true })
     }
 
-    this.lastMessageSent = this.client.sendMessage(message.chat.id, reply, options);
+    this.lastMessageSent = this.client.sendMessage(message.chat.id, reply, options)
   }
 
   respondToSingleCommand(message) {
-    const command = new Command(message);
+    const command = new Command(message)
 
     switch(command.getType()) {
     case COMMANDS.START:
-      this.respondToStart(message);
-      break;
+      this.respondToStart(message)
+      break
     case COMMANDS.FACE_WITH_URL:
-      this.respondToFaceWithUrl(message, command);
-      break;
+      this.respondToFaceWithUrl(message, command)
+      break
     case COMMANDS.FACE_SEARCH:
-      this.respondToFaceSearch(message, command);
-      break;
+      this.respondToFaceSearch(message, command)
+      break
     }
   }
 
   respondToStart(message) {
-    this.replyTo(message, 'Hello!');
+    this.replyTo(message, 'Hello!')
   }
 
   async respondToFaceWithUrl(message, command) {
-    let [face, url] = command.getParameters();
-    let buffer = await swapper.fetchAndSwap(url, face, message.chat.id);
-    this.client.sendPhoto(message.chat.id, buffer);
+    let [face, url] = command.getParameters()
+    let buffer = await swapper.fetchAndSwap(url, face, message.chat.id)
+    this.client.sendPhoto(message.chat.id, buffer)
   }
 
   async respondToFaceSearch(message, command) {
-    let [face, query] = command.getParameters();
-    let buffer = await swapper.searchAndSwap(query, face, message.chat.id);
-    this.client.sendPhoto(message.chat.id, buffer);
+    let [face, query] = command.getParameters()
+    let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
+    this.client.sendPhoto(message.chat.id, buffer)
   }
 
   saveNewPicture(chatId, name, pictureId) {
@@ -192,45 +192,45 @@ export default class MessagesFsm {
       .then(fileLink => {
         got
           .stream(fileLink, { encoding: null })
-          .pipe(fs.createWriteStream(findFacePath(name, chatId)));
-      });
+          .pipe(fs.createWriteStream(findFacePath(name, chatId)))
+      })
   }
 
   onbeforeevent(event, from, to, message) {
     switch (event) {
     case EVENTS.CANCEL:
-      this.replyTo(message, 'Ok, cancelled');
-      break;
+      this.replyTo(message, 'Ok, cancelled')
+      break
     case EVENTS.ADD:
-      this.replyTo(message, 'Alright, send the me the new face image AS A FILE', true);
-      break;
+      this.replyTo(message, 'Alright, send the me the new face image AS A FILE', true)
+      break
     case EVENTS.GOT_FILE:
-      this.pictureId = message.document.file_id;
-      this.replyTo(message, 'What\'s the name of the new face?', true);
-      break;
+      this.pictureId = message.document.file_id
+      this.replyTo(message, 'What\'s the name of the new face?', true)
+      break
     case EVENTS.GOT_NAME:
-      let newName = this.newName || message.text;
+      let newName = this.newName || message.text
       this.saveNewPicture(message.chat.id, newName, this.pictureId).then(() => {
-        this.replyTo(message, 'Got it! The new face is saved.');
-      });
-      break;
+        this.replyTo(message, 'Got it! The new face is saved.')
+      })
+      break
     case EVENTS.INVALID_NAME:
-      this.replyTo(message, 'Invalid name, it has to be made of alphanumeric characters only, no spaces', true);
-      break;
+      this.replyTo(message, 'Invalid name, it has to be made of alphanumeric characters only, no spaces', true)
+      break
     case EVENTS.GOT_INVALID_FILE:
-      this.replyTo(message, 'You have to send the new face AS A FILE', true);
-      break;
+      this.replyTo(message, 'You have to send the new face AS A FILE', true)
+      break
     case EVENTS.EXISTING_NAME:
-      this.newName = message.text;
-      this.replyTo(message, 'That face already exists, do you want to override it? (yes/no)', true);
-      break;
+      this.newName = message.text
+      this.replyTo(message, 'That face already exists, do you want to override it? (yes/no)', true)
+      break
     case EVENTS.CANCEL_OVERRIDE:
-      this.newName = undefined;
-      this.replyTo(message, 'Ok, I won\'t override it, give me a new name', true);
-      break;
+      this.newName = undefined
+      this.replyTo(message, 'Ok, I won\'t override it, give me a new name', true)
+      break
     case EVENTS.SINGLE_COMMAND:
-      this.respondToSingleCommand(message);
-      break;
+      this.respondToSingleCommand(message)
+      break
     }
   }
 }

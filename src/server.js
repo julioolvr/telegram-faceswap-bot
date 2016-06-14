@@ -1,24 +1,24 @@
-import Bot from './bot';
+import Bot from './bot'
 
-let ALLOWED_CHAT_IDS;
+let ALLOWED_CHAT_IDS
 
 if (process.env.ALLOWED_CHAT_IDS) {
-  ALLOWED_CHAT_IDS = process.env.ALLOWED_CHAT_IDS.split(';');
+  ALLOWED_CHAT_IDS = process.env.ALLOWED_CHAT_IDS.split(';')
 }
 
 class App {
   start() {
-    const bot = new Bot(process.env.BOT_TOKEN);
+    const bot = new Bot(process.env.BOT_TOKEN)
 
     bot.onMessage(msg => {
       if (ALLOWED_CHAT_IDS && !ALLOWED_CHAT_IDS.includes(msg.chat.id.toString())) {
-        console.log('Got message from unknown id', msg.chat.id);
-        return false;
+        console.log('Got message from unknown id', msg.chat.id)
+        return false
       }
 
-      bot.respondTo(msg);
-    });
+      bot.respondTo(msg)
+    })
   }
 }
 
-export default App;
+export default App
