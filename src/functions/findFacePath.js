@@ -10,7 +10,7 @@ export const findFaceDirectory = (chatId) => {
 
 export const findFacePath = (name, chatId) => {
   const faceDirectory = findFaceDirectory(chatId)
-  const facePath = path.join(faceDirectory, `${name}.png`)
+  const facePath = path.join(faceDirectory, `${name.toLowerCase()}.png`)
 
   if (facePath.indexOf(faceDirectory) !== 0) {
     throw new Error('Tried to access a face outside the chat\'s path')

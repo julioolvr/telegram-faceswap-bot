@@ -197,7 +197,7 @@ export default class MessagesFsm {
       .filter(fileName => fileName.endsWith('.png'))
       .map(imageFileName => imageFileName.replace(/\.png$/, ''))
 
-    this.replyTo(message, `The available faces are ${imagesFileNames.join(', ')}`)
+    this.replyTo(message, `The available faces are ${imagesFileNames.map(name => name.toLowerCase()).join(', ')}`)
   }
 
   saveNewPicture(chatId, name, pictureId) {
@@ -225,7 +225,7 @@ export default class MessagesFsm {
       break
     case EVENTS.GOT_NAME:
       let newName = this.newName || message.text
-      this.saveNewPicture(message.chat.id, newName, this.pictureId).then(() => {
+      this.saveNewPicture(message.chat.id, newName.toLowerCase(), this.pictureId).then(() => {
         this.replyTo(message, 'Got it! The new face is saved.')
       })
       break
