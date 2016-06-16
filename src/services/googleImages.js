@@ -1,8 +1,13 @@
 import got from 'got'
 
+function randomSearchKey() {
+  const keys = process.env.GOOGLE_SEARCH_KEY.split(';')
+  return keys[Math.floor(Math.random() * keys.length)]
+}
+
 export const search = (query) => {
   const url =
-    `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_KEY}&cx=${process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}`
+    `https://www.googleapis.com/customsearch/v1?key=${randomSearchKey()}&cx=${process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}`
 
   return got(url, { json: true })
     .then(response => response.body)
