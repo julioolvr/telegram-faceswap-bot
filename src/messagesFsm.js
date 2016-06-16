@@ -181,8 +181,13 @@ export default class MessagesFsm {
 
   async respondToFaceWithUrl(message, command) {
     let [face, url] = command.getParameters()
-    let buffer = await swapper.fetchAndSwap(url, face, message.chat.id)
-    this.client.sendPhoto(message.chat.id, buffer)
+
+    try {
+      let buffer = await swapper.fetchAndSwap(url, face, message.chat.id)
+      this.client.sendPhoto(message.chat.id, buffer)
+    } catch (err) {
+      this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })
+    }
   }
 
   async respondToFaceSearch(message, command) {
@@ -192,7 +197,7 @@ export default class MessagesFsm {
       let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
-      this.client.sendMessage(message.chat.id, err.message)
+      this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })
     }
   }
 
