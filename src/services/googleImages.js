@@ -6,7 +6,8 @@ export const search = (query) => {
 
   return got(url, { json: true })
     .then(response => response.body)
-    .then(data => data.items.map(item => item.pagemap.imageobject[0]))
+    .then(data => data.items ? data.items : [])
+    .then(items => items.map(item => item.pagemap.imageobject[0]))
     .then(imageObjects => imageObjects.map(imageObject => imageObject.url || imageObject.contenturl))
     .then(imagesUrls => imagesUrls.filter(url => url))
 }

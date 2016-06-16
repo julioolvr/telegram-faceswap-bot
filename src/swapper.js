@@ -33,7 +33,7 @@ export function swap({ background, newFace }) {
         if (err) {
           reject(err) // TODO: Better error messages
         } else if (faces.length === 0) {
-          reject('Couldn\'t find any face on that image')
+          reject(new Error('Couldn\'t find any face on that image'))
         } else {
           faces.forEach(face => {
             let newFaceImage = images(newFace).size(face.width * resizeRatio, face.height * resizeRatio)
@@ -59,21 +59,29 @@ export function fetchAndSwap(url, newFaceName, chatId) {
 export function searchAndSwap(query, newFaceName, chatId) {
   return googleImages.search(query).then(imagesUrls => {
     if (imagesUrls.length === 0) {
-      throw new Error('No images found')
+      throw new Error(`No images found for "${query}"`)
     }
 
-    return multipleFetchAndSwap(imagesUrls, newFaceName, chatId)
+    return multipleFetchAndSwap(imagesUrls, newFaceName, chatId).catch(err => {
+      throw new Error(`No faces found on any image for "${query}"`)
+    })
   })
 }
 
-function multipleFetchAndSwap(urls, newFaceName, chatId) {
-  return new Promise((resolve, reject) => {
-    if (urls.length === 0) {
-      reject('No face found on any url')
-    } else {
-      resolve(fetchAndSwap(urls[0], newFaceName, chatId).catch(err => {
-        return multipleFetchAndSwap(urls.slice(1), newFaceName, chatId)
-      }))
+async function multipleFetchAndSwap(urls, newFaceName, chatId) {
+  let swappedFace
+
+  for (let i = 0; i < urls.length; i++) {
+    try {
+      swappedFace = await fetchAndSwap(urls[i], newFaceName, chatId)
+    } catch (err) {
+      console.log('Error finding face', urls[i], err)
     }
-  })
+
+    if (swappedFace) {
+      return swappedFace
+    }
+  }
+
+  throw new Error('No face found on any url')
 }

@@ -187,8 +187,13 @@ export default class MessagesFsm {
 
   async respondToFaceSearch(message, command) {
     let [face, query] = command.getParameters()
-    let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
-    this.client.sendPhoto(message.chat.id, buffer)
+
+    try {
+      let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
+      this.client.sendPhoto(message.chat.id, buffer)
+    } catch (err) {
+      this.client.sendMessage(message.chat.id, err.message)
+    }
   }
 
   async respondToFaceList(message) {
