@@ -40,7 +40,8 @@ class Command {
   }
 
   getParameters() {
-    return extractCommand(this.message.text)[1].split('+')
+    let parametersText = extractCommand(this.message.text)[1]
+    return parametersText ? parametersText.split('+') : []
   }
 
   getType() {

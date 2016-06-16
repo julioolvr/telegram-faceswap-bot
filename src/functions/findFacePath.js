@@ -1,4 +1,8 @@
 import path from 'path'
+import fs from 'fs'
+import Promise from 'bluebird'
+
+Promise.promisifyAll(fs)
 
 function getRootPath() {
   return path.join(global.rootPath, 'img')
@@ -17,4 +21,12 @@ export const findFacePath = (name, chatId) => {
   }
 
   return facePath
+}
+
+export async function allFaceNames(chatId) {
+  const fileNames = await fs.readdirAsync(findFaceDirectory(chatId))
+  return fileNames
+    .filter(fileName => fileName.endsWith('.png'))
+    .map(imageFileName => imageFileName.replace(/\.png$/, ''))
+    .map(faceName => faceName.toLowerCase())
 }

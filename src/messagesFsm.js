@@ -5,7 +5,7 @@ import got from 'got'
 
 import Command from './command'
 import { COMMANDS } from './command'
-import { findFaceDirectory, findFacePath } from './functions/findFacePath'
+import { findFaceDirectory, findFacePath, allFaceNames } from './functions/findFacePath'
 import helpMessages from './helpMessages'
 import * as swapper from './swapper'
 
@@ -180,7 +180,20 @@ export default class MessagesFsm {
   }
 
   async respondToFaceWithUrl(message, command) {
-    let [face, url] = command.getParameters()
+    let parameters = command.getParameters()
+    let face
+    let url
+
+    if (parameters.length === 1) {
+      url = parameters[0]
+    } else if (parameters.length > 1) {
+      face = parameters[0]
+      url = parameters[1]
+    }
+
+    if (!url) {
+      return this.client.sendMessage(message.chat.id, 'Usage: /combine face+some url or /combine url', { reply_to_message_id: message.message_id })
+    }
 
     try {
       let buffer = await swapper.fetchAndSwap(url, face, message.chat.id)
@@ -191,7 +204,20 @@ export default class MessagesFsm {
   }
 
   async respondToFaceSearch(message, command) {
-    let [face, query] = command.getParameters()
+    let parameters = command.getParameters()
+    let face
+    let query
+
+    if (parameters.length === 1) {
+      query = parameters[0]
+    } else if (parameters.length > 1) {
+      face = parameters[0]
+      query = parameters[1]
+    }
+
+    if (!query) {
+      return this.client.sendMessage(message.chat.id, 'Usage: /face face+some query or /combine url', { reply_to_message_id: message.message_id })
+    }
 
     try {
       let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
@@ -202,12 +228,8 @@ export default class MessagesFsm {
   }
 
   async respondToFaceList(message) {
-    const fileNames = await fs.readdirAsync(findFaceDirectory(message.chat.id))
-    const imagesFileNames = fileNames
-      .filter(fileName => fileName.endsWith('.png'))
-      .map(imageFileName => imageFileName.replace(/\.png$/, ''))
-
-    this.replyTo(message, `The available faces are ${imagesFileNames.map(name => name.toLowerCase()).join(', ')}`)
+    const faceNames = await allFaceNames(message.chat.id)
+    this.client.sendMessage(message.chat.id, `The available faces are ${faceNames.join(', ')}`, { reply_to_message_id: message.message_id })
   }
 
   saveNewPicture(chatId, name, pictureId) {

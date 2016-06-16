@@ -5,8 +5,10 @@ import cv from 'opencv'
 import images from 'images'
 
 import * as googleImages from './services/googleImages'
-import { findFacePath } from './functions/findFacePath'
+import { findFacePath, findFaceDirectory, allFaceNames} from './functions/findFacePath'
 import { shuffleArray } from './functions/utils'
+
+Promise.promisifyAll(fs)
 
 const MAX_SIZE = 1000
 
@@ -51,10 +53,17 @@ export function swap({ background, newFace }) {
   })
 }
 
-export function fetchAndSwap(url, newFaceName, chatId) {
+export async function fetchAndSwap(url, newFaceName, chatId) {
+  let faceName = newFaceName
+
+  if (!faceName) {
+    let allFaces = await allFaceNames(chatId)
+    faceName = shuffleArray(allFaces)[0]
+  }
+
   return swap({
     background: request({ url, encoding: null }),
-    newFace: fs.readFileSync(findFacePath(newFaceName, chatId))
+    newFace: fs.readFileSync(findFacePath(faceName, chatId))
   })
 }
 
