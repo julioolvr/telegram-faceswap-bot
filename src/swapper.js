@@ -1,10 +1,12 @@
 import Promise from 'bluebird'
 import fs from 'fs'
-import * as googleImages from './services/googleImages'
 import request from 'request'
 import cv from 'opencv'
 import images from 'images'
+
+import * as googleImages from './services/googleImages'
 import { findFacePath } from './functions/findFacePath'
+import { shuffleArray } from './functions/utils'
 
 const MAX_SIZE = 1000
 
@@ -62,7 +64,7 @@ export function searchAndSwap(query, newFaceName, chatId) {
       throw new Error(`No images found for "${query}"`)
     }
 
-    return multipleFetchAndSwap(imagesUrls, newFaceName, chatId).catch(err => {
+    return multipleFetchAndSwap(shuffleArray(imagesUrls), newFaceName, chatId).catch(err => {
       throw new Error(`No faces found on any image for "${query}"`)
     })
   })

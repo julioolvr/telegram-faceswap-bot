@@ -197,7 +197,7 @@ export default class MessagesFsm {
       let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
-      this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })
+      this.client.sendMessage(message.chat.id, err.stack, { reply_to_message_id: message.message_id })
     }
   }
 
