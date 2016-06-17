@@ -231,7 +231,7 @@ export default class MessagesFsm {
 
   async respondToFaceList(message) {
     const faceNames = await allFaceNames(message.chat.id)
-    this.replyTo(message, `The available faces are ${faceNames.join(', ')}`)
+    this.replyTo(message, faceNames.length > 0 ? `The available faces are ${faceNames.join(', ')}` : 'No faces available, add some with /add')
   }
 
   saveNewPicture(chatId, name, pictureId) {
