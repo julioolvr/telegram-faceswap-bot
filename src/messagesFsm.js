@@ -6,6 +6,7 @@ import got from 'got'
 import Command from './command'
 import { COMMANDS } from './command'
 import { findFaceDirectory, findFacePath, allFaceNames } from './functions/findFacePath'
+import * as errors from './errors'
 import helpMessages from './helpMessages'
 import * as swapper from './swapper'
 
@@ -44,6 +45,25 @@ function decorateFsm(target) {
       { name: EVENTS.GOT_NAME, from: ['waitingname', 'overridename'], to: FINAL }
     ]
   })
+}
+
+function extractSwapParameters(command) {
+  let parameters = command.getParameters()
+  let faces
+  let queryOrUrl
+
+  if (parameters.length === 1) {
+    queryOrUrl = parameters[0]
+  } else if (parameters.length > 1) {
+    faces = parameters[0].split(' ')
+    queryOrUrl = parameters[1]
+  }
+
+  if (!queryOrUrl) {
+    throw new errors.MissingParameterError()
+  }
+
+  return [faces, queryOrUrl]
 }
 
 export default class MessagesFsm {
@@ -159,73 +179,60 @@ export default class MessagesFsm {
 
   respondToSingleCommand(message) {
     const command = new Command(message)
+    let messageSent
 
     switch(command.getType()) {
     case COMMANDS.START:
     case COMMANDS.HELP:
-      this.respondToHelpMessage(message, command)
+      messageSent = this.respondToHelpMessage(message, command)
       break
     case COMMANDS.FACE_WITH_URL:
-      this.respondToFaceWithUrl(message, command)
+      messageSent = this.respondToFaceWithUrl(message, command)
       break
     case COMMANDS.FACE_SEARCH:
-      this.respondToFaceSearch(message, command)
+      messageSent = this.respondToFaceSearch(message, command)
       break
     case COMMANDS.LIST_FACES:
-      this.respondToFaceList(message)
+      messageSent = this.respondToFaceList(message)
       break
     }
+
+    messageSent.catch(err => {
+      this.replyTo(message, err.message)
+    })
   }
 
   respondToHelpMessage(message, command) {
-    this.replyTo(message, helpMessages[command.getType()])
+    return this.replyTo(message, helpMessages[command.getType()])
   }
 
   async respondToFaceWithUrl(message, command) {
-    let parameters = command.getParameters()
-    let faces
-    let url
-
-    if (parameters.length === 1) {
-      url = parameters[0]
-    } else if (parameters.length > 1) {
-      faces = parameters[0].split(' ')
-      url = parameters[1]
-    }
-
-    if (!url) {
-      return this.replyTo(message, 'Usage: /combine face+some url or /combine url')
-    }
-
     try {
+      let [faces, url] = extractSwapParameters(command)
       let buffer = await swapper.fetchAndSwap(url, faces, message.chat.id)
+
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
-      this.replyTo(message, err.message)
+      if (err instanceof errors.MissingParameterError) {
+        return this.replyTo(message, 'Usage: /combine face+some url or /combine url')
+      } else {
+        throw err
+      }
     }
   }
 
   async respondToFaceSearch(message, command) {
-    let parameters = command.getParameters()
-    let faces
-    let query
-
-    if (parameters.length === 1) {
-      query = parameters[0]
-    } else if (parameters.length > 1) {
-      faces = parameters[0].split(' ')
-      query = parameters[1]
-    }
-
-    if (!query) {
-      return this.replyTo(message, 'Usage: /face face+some query or /face query')
-    }
-
     try {
+      let [faces, query] = extractSwapParameters(command)
       let buffer = await swapper.searchAndSwap(query, faces, message.chat.id)
+
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
-      this.replyTo(message, err.message)
+      if (err instanceof errors.MissingParameterError) {
+        return this.replyTo(message, 'Usage: /face face+some query or /face query')
+      } else {
+        throw err
+      }
     }
   }
 
