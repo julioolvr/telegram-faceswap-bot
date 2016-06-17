@@ -181,13 +181,13 @@ export default class MessagesFsm {
 
   async respondToFaceWithUrl(message, command) {
     let parameters = command.getParameters()
-    let face
+    let faces
     let url
 
     if (parameters.length === 1) {
       url = parameters[0]
     } else if (parameters.length > 1) {
-      face = parameters[0]
+      faces = parameters[0].split(' ')
       url = parameters[1]
     }
 
@@ -196,7 +196,7 @@ export default class MessagesFsm {
     }
 
     try {
-      let buffer = await swapper.fetchAndSwap(url, face, message.chat.id)
+      let buffer = await swapper.fetchAndSwap(url, faces, message.chat.id)
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
       this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })
@@ -205,22 +205,22 @@ export default class MessagesFsm {
 
   async respondToFaceSearch(message, command) {
     let parameters = command.getParameters()
-    let face
+    let faces
     let query
 
     if (parameters.length === 1) {
       query = parameters[0]
     } else if (parameters.length > 1) {
-      face = parameters[0]
+      faces = parameters[0].split(' ')
       query = parameters[1]
     }
 
     if (!query) {
-      return this.client.sendMessage(message.chat.id, 'Usage: /face face+some query or /combine url', { reply_to_message_id: message.message_id })
+      return this.client.sendMessage(message.chat.id, 'Usage: /face face+some query or /face query', { reply_to_message_id: message.message_id })
     }
 
     try {
-      let buffer = await swapper.searchAndSwap(query, face, message.chat.id)
+      let buffer = await swapper.searchAndSwap(query, faces, message.chat.id)
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
       this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })

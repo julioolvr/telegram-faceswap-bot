@@ -24,7 +24,7 @@ function proportionalSize(width, height) {
   }
 }
 
-export function swap({ background, newFace }) {
+export function swap({ background, newFaces }) {
   return new Promise((resolve, reject) => {
     let backgroundStream = new cv.ImageDataStream()
 
@@ -39,8 +39,8 @@ export function swap({ background, newFace }) {
         } else if (faces.length === 0) {
           reject(new Error('Couldn\'t find any face on that image'))
         } else {
-          faces.forEach(face => {
-            let newFaceImage = images(newFace).size(face.width * resizeRatio, face.height * resizeRatio)
+          faces.forEach((face, i) => {
+            let newFaceImage = images(newFaces[i % newFaces.length]).size(face.width * resizeRatio, face.height * resizeRatio)
             image.draw(newFaceImage, face.x * resizeRatio, face.y * resizeRatio)
           })
 
@@ -53,38 +53,38 @@ export function swap({ background, newFace }) {
   })
 }
 
-export async function fetchAndSwap(url, newFaceName, chatId) {
-  let faceName = newFaceName
+export async function fetchAndSwap(url, faces, chatId) {
+  let faceNames = faces
 
-  if (!faceName) {
+  if (!faceNames) {
     let allFaces = await allFaceNames(chatId)
-    faceName = shuffleArray(allFaces)[0]
+    faceNames = shuffleArray(allFaces)
   }
 
   return swap({
     background: request({ url, encoding: null }),
-    newFace: fs.readFileSync(findFacePath(faceName, chatId))
+    newFaces: faceNames.map(faceName => fs.readFileSync(findFacePath(faceName, chatId)))
   })
 }
 
-export function searchAndSwap(query, newFaceName, chatId) {
+export function searchAndSwap(query, faces, chatId) {
   return googleImages.search(query).then(imagesUrls => {
     if (imagesUrls.length === 0) {
       throw new Error(`No images found for "${query}"`)
     }
 
-    return multipleFetchAndSwap(shuffleArray(imagesUrls), newFaceName, chatId).catch(err => {
+    return multipleFetchAndSwap(shuffleArray(imagesUrls), faces, chatId).catch(err => {
       throw new Error(`No faces found on any image for "${query}"`)
     })
   })
 }
 
-async function multipleFetchAndSwap(urls, newFaceName, chatId) {
+async function multipleFetchAndSwap(urls, faces, chatId) {
   let swappedFace
 
   for (let i = 0; i < urls.length; i++) {
     try {
-      swappedFace = await fetchAndSwap(urls[i], newFaceName, chatId)
+      swappedFace = await fetchAndSwap(urls[i], faces, chatId)
     } catch (err) {
       console.log('Error finding face', urls[i], err)
     }
