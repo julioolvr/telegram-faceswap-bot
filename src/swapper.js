@@ -49,6 +49,8 @@ export function swap({ background, newFaces }) {
       })
     })
 
+    backgroundStream.on('error', reject)
+
     background.pipe(backgroundStream)
   })
 }
