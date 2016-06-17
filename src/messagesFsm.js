@@ -55,7 +55,7 @@ function extractSwapParameters(command) {
   if (parameters.length === 1) {
     queryOrUrl = parameters[0]
   } else if (parameters.length > 1) {
-    faces = parameters[0].split(' ')
+    faces = parameters[0].split(' ').map(s => s.trim()).filter(x => x)
     queryOrUrl = parameters[1]
   }
 

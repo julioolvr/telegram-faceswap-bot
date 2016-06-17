@@ -41,7 +41,7 @@ class Command {
 
   getParameters() {
     let parametersText = extractCommand(this.message.text)[1]
-    return parametersText ? parametersText.split('+') : []
+    return parametersText ? parametersText.split('+').map(s => s.trim()) : []
   }
 
   getType() {
