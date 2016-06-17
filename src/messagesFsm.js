@@ -145,7 +145,9 @@ export default class MessagesFsm {
   }
 
   replyTo(message, reply, forceReply) {
-    let options = {}
+    let options = {
+      reply_to_message_id: message.message_id
+    }
 
     if (forceReply) {
       options.reply_markup = JSON.stringify({ force_reply: true, selective: true })
