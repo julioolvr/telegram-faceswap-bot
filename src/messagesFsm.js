@@ -194,14 +194,14 @@ export default class MessagesFsm {
     }
 
     if (!url) {
-      return this.client.sendMessage(message.chat.id, 'Usage: /combine face+some url or /combine url', { reply_to_message_id: message.message_id })
+      return this.replyTo(message, 'Usage: /combine face+some url or /combine url')
     }
 
     try {
       let buffer = await swapper.fetchAndSwap(url, faces, message.chat.id)
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
-      this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })
+      this.replyTo(message, err.message)
     }
   }
 
@@ -218,20 +218,20 @@ export default class MessagesFsm {
     }
 
     if (!query) {
-      return this.client.sendMessage(message.chat.id, 'Usage: /face face+some query or /face query', { reply_to_message_id: message.message_id })
+      return this.replyTo(message, 'Usage: /face face+some query or /face query')
     }
 
     try {
       let buffer = await swapper.searchAndSwap(query, faces, message.chat.id)
       this.client.sendPhoto(message.chat.id, buffer)
     } catch (err) {
-      this.client.sendMessage(message.chat.id, err.message, { reply_to_message_id: message.message_id })
+      this.replyTo(message, err.message)
     }
   }
 
   async respondToFaceList(message) {
     const faceNames = await allFaceNames(message.chat.id)
-    this.client.sendMessage(message.chat.id, `The available faces are ${faceNames.join(', ')}`, { reply_to_message_id: message.message_id })
+    this.replyTo(message, `The available faces are ${faceNames.join(', ')}`)
   }
 
   saveNewPicture(chatId, name, pictureId) {
